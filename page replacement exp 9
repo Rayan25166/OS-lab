@@ -1,0 +1,148 @@
+#include <stdio.h>
+
+int pages[50], n, f;
+
+// 🔁 FIFO Function
+void fifo() {
+    int frames[10], i, j, index = 0, faults = 0, found;
+
+    for(i = 0; i < f; i++)
+        frames[i] = -1;
+
+    for(i = 0; i < n; i++) {
+        found = 0;
+
+        for(j = 0; j < f; j++) {
+            if(frames[j] == pages[i]) {
+                found = 1;
+                break;
+            }
+        }
+
+        if(!found) {
+            frames[index] = pages[i];
+            index = (index + 1) % f;
+            faults++;
+        }
+    }
+
+    printf("FIFO Page Faults = %d\n", faults);
+}
+
+// 🔁 LRU Function
+void lru() {
+    int frames[10], time[10];
+    int i, j, pos, faults = 0, counter = 0, found;
+
+    for(i = 0; i < f; i++)
+        frames[i] = -1;
+
+    for(i = 0; i < n; i++) {
+        found = 0;
+
+        for(j = 0; j < f; j++) {
+            if(frames[j] == pages[i]) {
+                counter++;
+                time[j] = counter;
+                found = 1;
+                break;
+            }
+        }
+
+        if(!found) {
+            pos = 0;
+            for(j = 1; j < f; j++)
+                if(time[j] < time[pos])
+                    pos = j;
+
+            frames[pos] = pages[i];
+            counter++;
+            time[pos] = counter;
+            faults++;
+        }
+    }
+
+    printf("LRU Page Faults = %d\n", faults);
+}
+
+// 🔁 Optimal Function
+void optimal() {
+    int frames[10];
+    int i, j, k, pos, faults = 0, found;
+
+    for(i = 0; i < f; i++)
+        frames[i] = -1;
+
+    for(i = 0; i < n; i++) {
+        found = 0;
+
+        for(j = 0; j < f; j++) {
+            if(frames[j] == pages[i]) {
+                found = 1;
+                break;
+            }
+        }
+
+        if(!found) {
+            int farthest = i, replace = -1;
+
+            for(j = 0; j < f; j++) {
+                for(k = i + 1; k < n; k++) {
+                    if(frames[j] == pages[k]) {
+                        if(k > farthest) {
+                            farthest = k;
+                            replace = j;
+                        }
+                        break;
+                    }
+                }
+
+                if(k == n) {
+                    replace = j;
+                    break;
+                }
+            }
+
+            if(replace == -1)
+                replace = 0;
+
+            frames[replace] = pages[i];
+            faults++;
+        }
+    }
+
+    printf("Optimal Page Faults = %d\n", faults);
+}
+
+// 🔷 Main Menu
+int main() {
+    int choice;
+
+    printf("Enter number of pages: ");
+    scanf("%d", &n);
+
+    printf("Enter page reference string:\n");
+    for(int i = 0; i < n; i++)
+        scanf("%d", &pages[i]);
+
+    printf("Enter number of frames: ");
+    scanf("%d", &f);
+
+    do {
+        printf("\n--- Page Replacement Menu ---\n");
+        printf("1. FIFO\n2. LRU\n3. Optimal\n4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case 1: fifo(); break;
+            case 2: lru(); break;
+            case 3: optimal(); break;
+            case 4: printf("Exiting...\n"); break;
+            default: printf("Invalid choice!\n");
+        }
+
+    } while(choice != 4);
+
+    return 0;
+}
